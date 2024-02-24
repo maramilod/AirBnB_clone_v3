@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-hey this is my 2d try i hope it works 
+hey this is my 2d try i hope it works
 """
 
 from flask import jsonify, request, abort
@@ -29,7 +29,8 @@ def get_state(state_id):
     return jsonify(state)
 
 
-@app_views.route('/states/<state_id>', methods=['DELETE'], strict_slashes=False)
+@app_views.route('/states/<state_id>', methods=['DELETE'],
+                 strict_slashes=False)
 def del_state(state_id):
     """delete"""
     empty_dict = {}
