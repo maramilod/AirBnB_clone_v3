@@ -1,20 +1,18 @@
 #!/usr/bin/python3
 """
-    hey
+one more time
 """
 from api.v1.views import app_views
 from flask import jsonify
 from models import storage
 
 
-# task 3
 @app_views.route('/status', methods=['GET'])
 def status():
-    """ ok """
+    """return ok """
     return jsonify({"status": "OK"})
 
 
-# task 4
 @app_views.route('/stats', methods=['GET'])
 def stats():
     """ count """
