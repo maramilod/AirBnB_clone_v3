@@ -2,8 +2,9 @@
 """hey"""
 from api.v1.views import app_views
 from flask import abort, jsonify, make_response, request
-from models import storage
+from models import storage, storage_t
 from models.city import City
+from models.state import State
 from models.place import Place
 from models.user import User
 
@@ -94,27 +95,34 @@ def places_search():
     states = dic.get("states")
     cities = dic.get("cities")
     amenities = dic.get("amenities")
-    if amenities and len(amenities) != 0:
+
+    if amenities:
         for place in all_places:
             ids = [o.id for o in place.amenities]
             if all(id in ids for id in amenities):
-                del place.amenities
-                places.append(place)
-    else:
-        places = all_places
-    all_places, places = places, []
-    if cities and len(cities) != 0:
-        for place in all_places:
-            if place.city_id in cities:
+                if storage_t == "db":
+                    del place.amenities
                 places.append(place)
     else:
         places = all_places
     all_places, places = places, []
 
-    if states and len(states) != 0:
+    if cities is None:
+        cities = []
+    if states:
+        for state in states:
+            a = storage.get(State, state)
+            if a:
+                ids = [o.id for o in a.cities]
+            else:
+                ids = []
+            for id in ids:
+                if id not in cities:
+                    cities.append(id)
+
+    if cities:
         for place in all_places:
-            city = storage.get(City, place.city_id)
-            if city.state_id in states:
+            if place.city_id in cities:
                 places.append(place)
     else:
         places = all_places
@@ -123,4 +131,4 @@ def places_search():
     for place in all_places:
         places.append(place.to_dict())
 
-    return make_response(jsonify(places), 200)
+    return jsonify(places)

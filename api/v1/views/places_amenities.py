@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """places_amenities.py"""
 from api.v1.views import app_views
-from flask import abort, jsonify
+from flask import abort, jsonify, make_response, request
 from models import storage, storage_t
 from models.amenity import Amenity
 from models.place import Place
@@ -53,6 +53,9 @@ def post_place_amenity(place_id, amenity_id):
     if storage_t == "db":
         place.amenities.append(amenity)
     else:
-        place.amenity_ids.append(amenity_id)
+        if place.amenity_ids:
+            place.amenity_ids.append(amenity_id)
+        else:
+            place.amenity_ids = [amenity_id]
     place.save()
     return make_response(jsonify(amenity.to_dict()), 201)
