@@ -51,7 +51,7 @@ def post_place(city_id):
     city = storage.get(City, city_id)
     if city is None:
         abort(404)
-    if not request.get_json():
+    if not request.is_json:
         return make_response(jsonify({'error': 'Not a JSON'}), 400)
     if 'user_id' not in request.get_json():
         return make_response(jsonify({'error': 'Missing user_id'}), 400)
@@ -73,10 +73,54 @@ def put_place(place_id):
     place = storage.get(Place, place_id)
     if place is None:
         abort(404)
-    if not request.get_json():
+    if not request.is_json:
         return make_response(jsonify({'error': 'Not a JSON'}), 400)
     for attr, val in request.get_json().items():
         if attr not in ['id', 'user_id', 'created_at', 'updated_at']:
             setattr(place, attr, val)
     place.save()
     return jsonify(place.to_dict()), 200
+
+
+@app_views.route('/places_search', methods=['POST'],
+                 strict_slashes=False)
+def places_search():
+    """create"""
+    if not request.is_json:
+        return make_response(jsonify({'error': 'Not a JSON'}), 400)
+    dic = request.get_json()
+    all_places = storage.all(Place).values()
+    places = []
+    states = dic.get("states")
+    cities = dic.get("cities")
+    amenities = dic.get("amenities")
+    if amenities and len(amenities) != 0:
+        for place in all_places:
+            ids = [o.id for o in place.amenities]
+            if all(id in ids for id in amenities):
+                del place.amenities
+                places.append(place)
+    else:
+        places = all_places
+    all_places, places = places, []
+    if cities and len(cities) != 0:
+        for place in all_places:
+            if place.city_id in cities:
+                places.append(place)
+    else:
+        places = all_places
+    all_places, places = places, []
+
+    if states and len(states) != 0:
+        for place in all_places:
+            city = storage.get(City, place.city_id)
+            if city.state_id in states:
+                places.append(place)
+    else:
+        places = all_places
+    all_places, places = places, []
+
+    for place in all_places:
+        places.append(place.to_dict())
+
+    return make_response(jsonify(places), 200)

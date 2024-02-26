@@ -59,8 +59,6 @@ class BaseModel:
         if "updated_at" in new_dict:
             new_dict["updated_at"] = new_dict["updated_at"].isoformat()
         new_dict["__class__"] = self.__class__.__name__
-        if new_dict["__class__"] == "User":
-            new_dict["password"] = self.password
         new_dict.pop('_sa_instance_state', None)
         if not save_to_disk:
             new_dict.pop('password', None)
